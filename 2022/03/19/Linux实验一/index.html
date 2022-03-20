@@ -14,7 +14,7 @@
 <meta property="og:description" content="Linux实验一">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-03-19T11:33:53.909Z">
-<meta property="article:modified_time" content="2022-03-19T12:55:54.066Z">
+<meta property="article:modified_time" content="2022-03-20T01:36:50.180Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -117,6 +117,15 @@
 <p>第三关大致内容是我们要了解邪恶先生的邪恶计划，但是他为了不让我们知道，创建了许多文件来迷惑我们，我们需要根据提示，在evil_plans目录下找到包含字符串‘secret message:’的文件，（冒号别落下了），这里我们用到grep搜索命令，进入操作终端，在对应目录下使用grep命令：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">┌──(kali㉿kali)-[~/lab1_handout/start/evil_plans]</span><br><span class="line">└─$ grep &#x27;secret message:&#x27; *</span><br></pre></td></tr></table></figure>
 <p>中间要搜索的字符串用单引号括起来，*号代代表搜索所有包含该字段的内容。<br>搜索完毕后我们会找到一个结果：<br>evil24.txt:21 secret message: pineapple<br>然后我们把pineapple这个字符串复制粘贴到终端1的作答区即可。</p>
+<h1 id="第四关"><a href="#第四关" class="headerlink" title="第四关"></a>第四关</h1><h3 id="原内容信息-3"><a href="#原内容信息-3" class="headerlink" title="原内容信息"></a>原内容信息</h3><p>We’re trying to discover what the rest of his plans say, but if<br>we try to open an editor with the file, Mr. Evil will receive a<br>notification. The best practice is to sneakily view it in the<br>command line. What command will you use to view evil24.txt? </p>
+<p>Please enter your answer:</p>
+<p>大致内容是我们试图发现他的计划其余说了什么，但是打开编辑器查看会被发现，问我们在命令行用什么命令查看evil24.txt文件，这里我们用的是cat命令来查看，然后我们在作答区输入cat即可。</p>
+<h1 id="第五关"><a href="#第五关" class="headerlink" title="第五关"></a>第五关</h1><h3 id="原内容信息-4"><a href="#原内容信息-4" class="headerlink" title="原内容信息"></a>原内容信息</h3><p>If we examine the evil text file with the secret message closely,<br>there might be some important information for how to understand<br>Mr. Evil’s next steps. What is the last instruction that the evil24.txt<br>file tells you to do? Now execute it! Try doing this with pipes!</p>
+<p>Please enter your answer:<br>大致内容是，让我们查看evil24.txt文件的最后一行的信息，还提示我们用管道。<br>我们找到evil24文件用cat命令查看后找到最后一行信息，<br>发现他让我们查看前几行信息，我们翻上去找到前几行，上面写着该文件未排序，还让我们用-n flag，并且删除重复项，<br>这里我们用到sort命令和uniq命令，然后用管道把他们连起来</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">┌──(kali㉿kali)-[~/lab1_handout/start/evil_plans]</span><br><span class="line">└─$ sort -n evil24.txt | uniq</span><br></pre></td></tr></table></figure>
+<p>执行后我们就得到了有序无重复的文本，阅读前几行得知，让我们创建一个叫release.txt的文件在we_tried_to&#x2F;目录下，然后提交我们创建文件的命令，这里我们用touch命令，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">┌──(kali㉿kali)-[~/lab1_handout/start/we_tried_to]</span><br><span class="line">└─$ touch release.txt</span><br></pre></td></tr></table></figure>
+<p>然后我们把该命令内容粘贴到作答区即可进入下一关</p>
 
       
     </div>

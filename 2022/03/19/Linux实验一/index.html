@@ -14,7 +14,7 @@
 <meta property="og:description" content="Linux实验一">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-03-19T11:33:53.909Z">
-<meta property="article:modified_time" content="2022-03-20T01:36:50.180Z">
+<meta property="article:modified_time" content="2022-03-20T04:01:04.771Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -126,6 +126,17 @@
 <p>执行后我们就得到了有序无重复的文本，阅读前几行得知，让我们创建一个叫release.txt的文件在we_tried_to&#x2F;目录下，然后提交我们创建文件的命令，这里我们用touch命令，</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">┌──(kali㉿kali)-[~/lab1_handout/start/we_tried_to]</span><br><span class="line">└─$ touch release.txt</span><br></pre></td></tr></table></figure>
 <p>然后我们把该命令内容粘贴到作答区即可进入下一关</p>
+<h1 id="第六关"><a href="#第六关" class="headerlink" title="第六关"></a>第六关</h1><h3 id="原内容信息-5"><a href="#原内容信息-5" class="headerlink" title="原内容信息"></a>原内容信息</h3><p>Make sure you remove the evil_plans directory and all of its contents!<br>Mr. Evil has a tendency to hide information in the outputs of different files.<br>But, the information in start&#x2F;we_tried_to&#x2F;them&#x2F;one&#x2F;listened.c seems to be missing information for it to run properly.<br>Read the TODO’s in listened.c Make sure to NOT delete the comments!</p>
+<p>Please enter your answer:<br>大致意思是先让我们删除evil_plans目录，然后让我们查看start&#x2F;we_tried_to&#x2F;them&#x2F;one&#x2F;listened.c这个文件，但这个.c文件似乎缺少一部分东西导致不能运行，让我们查看文件内的提示。我们找到并打开listened.c文件，查看提示我们得知，答案是一个魔法数字，然后缺失的代码在start&#x2F;we_tried_to&#x2F;them&#x2F;no.txt文件中，这里我们用vim命令同时分屏编辑no.txt和listened.c文件代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">┌──(root㉿kali)-[~/…/start/we_tried_to/them/one]</span><br><span class="line">└─# vim -O listened.c ../no.txt </span><br></pre></td></tr></table></figure>
+<p>然后把no.txt文件内容全部复制粘贴到listened.c文件中的相应位置。根据提示，再用gcc命令编译该程序，然后用.&#x2F;a.out输出文件再定向到start&#x2F;we_tried_to&#x2F;them&#x2F;but.txt中，具体操作如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">┌──(root㉿kali)-[~/…/start/we_tried_to/them/one]</span><br><span class="line">└─# gcc listened.c </span><br><span class="line">                                                                                                </span><br><span class="line">┌──(root㉿kali)-[~/…/start/we_tried_to/them/one]</span><br><span class="line">└─# ./a.out &gt;&gt; ../but.txt </span><br></pre></td></tr></table></figure>
+
+<p>然后根据后序提示让我们把but文件里边的输出结果进行数字排序并用head命令查看第一行内容，而且要利用管道<br>这里我们根据提示使用如下命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">┌──(root㉿kali)-[~/lab1_handout/start/we_tried_to/them]</span><br><span class="line">└─# sort -n but.txt | head -n 1 </span><br></pre></td></tr></table></figure>
+<p>就可以得到一行信息，最前面的数字42就是我们的答案，把它输入到作答区即可进入最后一关。</p>
+<h1 id="第七关"><a href="#第七关" class="headerlink" title="第七关"></a>第七关</h1><h3 id="原内容信息-6"><a href="#原内容信息-6" class="headerlink" title="原内容信息"></a>原内容信息</h3><p>Students have been trying to understand what Mr. Evil’s secret message is.<br>Mr. Evil has a tendency to save hints in file names and directory names.<br>Maybe Mr. Evil has organized the file names and directories to include<br>his secret message. We want to see all the names of the directories and files.<br>You should execute this Earth friendly command from the start&#x2F; directory.<br>Please type the secret message. Make sure you remove<br>the evil_plans directory and all of its contents! (You’ll probably want to<br>remove the a.out file from phase 6 too!)</p>
+<p>Please enter your answer:<br>大致内容是邪恶先生喜欢把计划藏在文件名和目录名中，让我们用一个对地球友好的命令来查看start目录框架并找出邪恶计划，而且让我们先删除第六步的a.out文件和确保evil_plans目录已经删除，然后我们随便输入一个答案，看看提示信息<br>Try using tree on the start directory. Do not include ‘&#x2F;‘ and have all lowercase letters. You might want to delete<br> the evil_plans directory, or just ignore them. You also probably want to replace the _ with spaces!<br>他让我们用tree命令不包含&#x2F;和小写字母，然后用空格代替’<em>‘。<br>我们在start目录下用输入tree命令查看文件架构，然后把所有文件名从头到尾连成一句话，用空格代替’</em>‘，得到这句话就是最终答案，粘贴到作答区即可通关。</p>
 
       
     </div>

